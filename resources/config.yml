@@ -1,0 +1,6 @@
+mysql:
+  host: localhost
+  user: root
+  pass: "test"
+  db: ensegope
+  port: 3306
