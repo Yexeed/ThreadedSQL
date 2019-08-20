@@ -10,6 +10,8 @@ namespace yexeed\thrsql;
 
 use Exception;
 use pocketmine\Thread;
+use Threaded;
+use ThreadedLogger;
 use yexeed\thrsql\utils\PrepareWrap;
 use yexeed\thrsql\utils\ResultWrap;
 
@@ -18,7 +20,7 @@ use yexeed\thrsql\utils\ResultWrap;
  */
 class MysqlWorker extends Thread
 {
-    /** @var \Threaded */
+    /** @var Threaded */
     public $inputs, $outputs;
     /** @var string */
     private $hostname;
@@ -32,13 +34,13 @@ class MysqlWorker extends Thread
     private $database;
     /** @var bool */
     private $shutdown;
-    /** @var \ThreadedLogger */
+    /** @var ThreadedLogger */
     private $logger;
 
     /** @var bool */
     private $crashed = false;
 
-    public function __construct(string $host, string $user, string $password, string $database, int $port, \ThreadedLogger $logger)
+    public function __construct(string $host, string $user, string $password, string $database, int $port, ThreadedLogger $logger)
     {
         $this->hostname = $host;
         $this->username = $user;
@@ -46,8 +48,8 @@ class MysqlWorker extends Thread
         $this->logger = $logger;
         $this->port = $port;
         $this->database = $database;
-        $this->inputs = new \Threaded();
-        $this->outputs = new \Threaded();
+        $this->inputs = new Threaded();
+        $this->outputs = new Threaded();
         $this->start();
     }
 
@@ -61,7 +63,7 @@ class MysqlWorker extends Thread
             $my = @new \mysqli($this->hostname, $this->username, $this->password, $this->database, $this->port);
             if($my->connect_errno){
                 $icv = iconv("CP1251", "UTF-8", $my->connect_error);
-                throw new Exception($icv, $my->connect_errno);
+                throw new Exception($my->connect_error, $my->connect_errno);
             }
             if(!$my->set_charset("utf8")){
                 throw new Exception($my->error);
