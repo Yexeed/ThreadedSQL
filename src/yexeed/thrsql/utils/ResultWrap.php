@@ -4,6 +4,8 @@
 namespace yexeed\thrsql\utils;
 
 
+use mysqli_stmt;
+
 class ResultWrap
 {
     /** @var bool */
@@ -25,7 +27,7 @@ class ResultWrap
         $this->timedOut = $timedOut;
     }
 
-    public static function executeAndWrapStmt(\mysqli_stmt $executedStmt){
+    public static function executeAndWrapStmt(mysqli_stmt $executedStmt){
         //todo: упростить логику этой функции
         if(!$executedStmt->execute()){
             $wrap = new ResultWrap([], $executedStmt->error);
@@ -54,7 +56,7 @@ class ResultWrap
     }
 
     /**
-     * @return array to be json-encod
+     * @return array, which should be json-encoded
      */
     public function arraySerialize(): array
     {

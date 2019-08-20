@@ -84,7 +84,7 @@ class ThreadedSQL extends PluginBase
         foreach ($this->timeout as $id => &$timeout){
             if($timeout <= 0){
                 $c = $this->callbacks[$id];
-                $c(new ResultWrap([], null, true));
+                $c(new ResultWrap([], "Timed-Out", true));
 
                 unset($this->thread->inputs[$id]);
                 unset($this->callbacks[$id]);
