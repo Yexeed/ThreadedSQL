@@ -62,7 +62,6 @@ class MysqlWorker extends Thread
         try {
             $my = @new \mysqli($this->hostname, $this->username, $this->password, $this->database, $this->port);
             if($my->connect_errno){
-                $icv = iconv("CP1251", "UTF-8", $my->connect_error);
                 throw new Exception($my->connect_error, $my->connect_errno);
             }
             if(!$my->set_charset("utf8")){
