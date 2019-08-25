@@ -181,7 +181,9 @@ class ThreadedSQL extends PluginBase
 
     public function onDisable()
     {
-        $this->thread->quit();
+        if($this->thread->isRunning()) {
+            $this->thread->quit();
+        }
     }
 
 }

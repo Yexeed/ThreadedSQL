@@ -10,6 +10,7 @@ namespace yexeed\thrsql;
 
 use Exception;
 use pocketmine\Thread;
+use pocketmine\ThreadManager;
 use Threaded;
 use ThreadedLogger;
 use yexeed\thrsql\utils\PrepareWrap;
@@ -123,7 +124,7 @@ class MysqlWorker extends Thread
     public function quit()
     {
         $this->shutdown();
-        parent::quit();
+        ThreadManager::getInstance()->remove($this);
     }
 
     public function setGarbage(){}
