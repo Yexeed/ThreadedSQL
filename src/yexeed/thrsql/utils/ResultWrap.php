@@ -17,14 +17,15 @@ class ResultWrap
     /** @var bool */
     private $timedOut;
     /** @var int */
-    private $insertId = -1;
+    private $insertId;
 
-    public function __construct(array $rows, $error = null, $timedOut = false)
+    public function __construct(array $rows, $error = null, $timedOut = false, int $insertId = -1)
     {
         $this->rows = $rows;
         $this->empty = empty($rows);
         $this->error = $error;
         $this->timedOut = $timedOut;
+        $this->insertId = $insertId;
     }
 
     public static function executeAndWrapStmt(mysqli_stmt $executedStmt){
@@ -62,8 +63,17 @@ class ResultWrap
     {
         return [
             'rows' => $this->rows,
-            'error' => $this->error
+            'error' => $this->error,
+            'insertId' => $this->insertId
         ];
+    }
+
+    /**
+     * @param array $data serialized array using the method above
+     * @return ResultWrap|null
+     */
+    public static function unserialize(array $data): ?ResultWrap{
+        return new ResultWrap($data['rows'], $data['error'], $data['insertId']);
     }
 
     /**
@@ -80,14 +90,6 @@ class ResultWrap
     public function getInsertId(): int
     {
         return $this->insertId;
-    }
-
-    /**
-     * @param int $insertId
-     */
-    public function setInsertId(int $insertId): void
-    {
-        $this->insertId = $insertId;
     }
 
     /**

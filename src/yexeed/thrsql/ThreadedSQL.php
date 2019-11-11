@@ -77,7 +77,7 @@ class ThreadedSQL extends PluginBase
 
             if (isset($this->callbacks[$id])) {
                 $c = $this->callbacks[$id];
-                $c(new ResultWrap($result['rows'], $result['error']));
+                $c(ResultWrap::unserialize($result));
                 unset($this->callbacks[$id]);
             }
         }
