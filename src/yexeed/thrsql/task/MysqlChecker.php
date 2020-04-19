@@ -4,21 +4,21 @@
 namespace yexeed\thrsql\task;
 
 
-use pocketmine\plugin\Plugin;
-use pocketmine\scheduler\PluginTask;
+use pocketmine\scheduler\Task;
+use yexeed\thrsql\ThreadedSQL;
 
-class MysqlChecker extends PluginTask
+class MysqlChecker extends Task
 {
-    public function __construct(Plugin $owner)
+    /*** @var ThreadedSQL */
+    private $owner;
+
+    public function __construct(ThreadedSQL $owner)
     {
-        parent::__construct($owner);
+        $this->owner = $owner;
     }
 
     public function onRun(int $currentTick)
     {
-        /** @see ThreadedSQL::check() */
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        $this->getOwner()->check();
+        $this->owner->check();
     }
 }
