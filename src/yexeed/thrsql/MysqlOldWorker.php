@@ -9,6 +9,7 @@
 namespace yexeed\thrsql;
 
 use Exception;
+use mysqli;
 use pocketmine\Thread;
 use pocketmine\ThreadManager;
 use Threaded;
@@ -19,7 +20,7 @@ use yexeed\thrsql\utils\ResultWrap;
 /*
  * this class uses a separate thread to work on mysql queries
  */
-class MysqlWorker extends Thread
+class MysqlOldWorker extends Thread
 {
     /** @var Threaded */
     public $inputs, $outputs;
@@ -61,7 +62,7 @@ class MysqlWorker extends Thread
     {
         $this->registerClassLoader();
         try {
-            $my = @new \mysqli($this->hostname, $this->username, $this->password, $this->database, $this->port);
+            $my = @new mysqli($this->hostname, $this->username, $this->password, $this->database, $this->port);
             if($my->connect_errno){
                 throw new Exception($my->connect_error, $my->connect_errno);
             }

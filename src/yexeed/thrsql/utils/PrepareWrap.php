@@ -9,7 +9,6 @@ namespace yexeed\thrsql\utils;
 
 use Exception;
 use JsonSerializable;
-use pocketmine\utils\MainLogger;
 
 class PrepareWrap implements JsonSerializable
 {

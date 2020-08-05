@@ -20,7 +20,7 @@ use yexeed\thrsql\utils\ResultWrap;
 
 class ThreadedSQL extends PluginBase
 {
-    /** @var MysqlWorker */
+    /** @var MysqlOldWorker */
     private $thread;
     /** @var self */
     private static $instance;
@@ -37,7 +37,7 @@ class ThreadedSQL extends PluginBase
         self::$instance = $this;
         $this->loadMysqlSettings();
         $settings = MysqlSettings::get();
-        $this->thread = new MysqlWorker(
+        $this->thread = new MysqlOldWorker(
             $settings->getHostname(),
             $settings->getUsername(),
             $settings->getPassword(),
@@ -63,7 +63,7 @@ class ThreadedSQL extends PluginBase
             }
             $this->timeout = [];
 
-            $this->getServer()->getScheduler()->cancelTask($this->checkerTaskId);
+            $this->getSched()->cancelTask($this->checkerTaskId);
             $this->working = false;
             $this->getLogger()->emergency("MysqlWorker CRASH!!!");
             return;
@@ -94,8 +94,18 @@ class ThreadedSQL extends PluginBase
         }
     }
 
+    private function getSched()
+    {
+        if(method_exists($this, "getScheduler")){
+            return $this->getScheduler();
+        }else{
+            /** @noinspection PhpUndefinedMethodInspection */
+            return $this->getServer()->getScheduler();
+        }
+    }
+
     public function startChecker(){
-        $handler = $this->getServer()->getScheduler()->scheduleRepeatingTask(new MysqlChecker($this), 1);
+        $handler = $this->getSched()->scheduleRepeatingTask(new MysqlChecker($this), 1);
         $this->checkerTaskId = $handler->getTaskId();
     }
 
