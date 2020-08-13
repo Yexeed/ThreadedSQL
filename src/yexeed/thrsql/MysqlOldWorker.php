@@ -77,7 +77,16 @@ class MysqlOldWorker extends Thread
         }
         $this->shutdown = false;
         $this->outputs[] = "enabled";
+        $now = time();
+        $nextUpdate = $now + 10;
         while(!$this->shutdown){
+            $now = time();
+            if($nextUpdate < $now) {
+                if(!$my->ping()){
+                    $this->logger->error("Can't ping mysql: " . $my->error);
+                }
+                $nextUpdate = $now + 10;
+            }
             while($line = $this->inputs->shift()){
                 $prepare = PrepareWrap::fromJson($line);
                 $mysqlStmt = $my->prepare($prepare->getQuery());
