@@ -91,10 +91,11 @@ class MysqlOldWorker extends Thread
                 $prepare = PrepareWrap::fromJson($line);
                 $mysqlStmt = $my->prepare($prepare->getQuery());
                 if($mysqlStmt === false){
-                    $this->outputs[] = [
+                    $resultWrap = new ResultWrap([], $my->error);
+                    $this->outputs[] = json_encode([
                         'id' => $prepare->getQueryId(),
-                        'result' => new ResultWrap([],  $my->error)
-                    ];
+                        'result' => $resultWrap->arraySerialize()
+                    ]);
                     continue;
                 }
 
