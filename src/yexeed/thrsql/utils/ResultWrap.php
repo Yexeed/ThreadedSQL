@@ -64,7 +64,8 @@ class ResultWrap
         return [
             'rows' => $this->rows,
             'error' => $this->error,
-            'insertId' => $this->insertId
+            'insertId' => $this->insertId,
+            'timedOut' => $this->timedOut
         ];
     }
 
@@ -73,7 +74,7 @@ class ResultWrap
      * @return ResultWrap|null
      */
     public static function unserialize(array $data): ?ResultWrap{
-        return new ResultWrap($data['rows'], $data['error'], $data['insertId']);
+        return new ResultWrap($data['rows'], $data['error'], $data['timedOut'], $data['insertId']);
     }
 
     /**
