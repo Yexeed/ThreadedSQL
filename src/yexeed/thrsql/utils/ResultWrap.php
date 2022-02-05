@@ -8,8 +8,6 @@ use mysqli_stmt;
 
 class ResultWrap
 {
-    /** @var bool */
-    private $empty;
     /** @var array */
     private $rows;
     /** @var string */
@@ -22,7 +20,6 @@ class ResultWrap
     public function __construct(array $rows, ?string $error = null, bool $timedOut = false, int $insertId = -1)
     {
         $this->rows = $rows;
-        $this->empty = empty($rows);
         $this->error = $error;
         $this->timedOut = $timedOut;
         $this->insertId = $insertId;
@@ -114,7 +111,7 @@ class ResultWrap
      */
     public function isEmpty(): bool
     {
-        return $this->empty;
+        return empty($this->rows);
     }
 
     /**
