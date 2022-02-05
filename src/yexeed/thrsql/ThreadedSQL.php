@@ -13,7 +13,9 @@ use Closure;
 use Exception;
 use mysqli;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
+use yexeed\thrsql\task\MysqlNewChecker;
 use yexeed\thrsql\task\MysqlOldChecker;
 use yexeed\thrsql\utils\MysqlSettings;
 use yexeed\thrsql\utils\PrepareWrap;
@@ -116,7 +118,9 @@ class ThreadedSQL extends PluginBase
     }
 
     public function startChecker(){
-        $handler = $this->getSched()->scheduleRepeatingTask(new MysqlOldChecker($this), 1);
+        /** @var Task $task */
+        $task = self::isPm4() ? new MysqlNewChecker($this) : new MysqlOldChecker($this);
+        $handler = $this->getSched()->scheduleRepeatingTask($task, 1);
         $this->checkerTaskHandler = $handler;
     }
 
