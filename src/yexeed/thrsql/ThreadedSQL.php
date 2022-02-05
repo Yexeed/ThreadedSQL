@@ -32,7 +32,7 @@ class ThreadedSQL extends PluginBase
     private $checkerTaskId;
     private $working = true;
 
-    public function onEnable()
+    public function onEnable(): void
     {
         self::$instance = $this;
         $this->loadMysqlSettings();
@@ -189,7 +189,7 @@ class ThreadedSQL extends PluginBase
         return self::$instance->working;
     }
 
-    public function onDisable()
+    public function onDisable(): void
     {
         if($this->thread->isRunning()) {
             $this->thread->quit();
