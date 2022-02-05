@@ -82,6 +82,10 @@ class ThreadedSQL extends PluginBase
             return;
         }
         while($line = $this->thread->outputs->shift()){
+            if($line === "enabled"){
+                $this->getLogger()->notice("MysqlWorker enabled!");
+                continue;
+            }
             $json = json_decode($line, true);
             $id = $json['id'];
             $result = $json['result'];
