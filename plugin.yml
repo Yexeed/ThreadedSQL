@@ -1,6 +1,8 @@
 name: ThreadedSQL
-api: "3.0.0"
-version: "3.0.3"
+api:
+  - "4.0.0"
+  - "3.0.0"
+version: "3.0.5"
 main: yexeed\thrsql\ThreadedSQL
 load: STARTUP
 description: "Плагин предоставляет доступ к базе MySQL в отдельном потоке, заметно снижая нагрузку на сервер."
