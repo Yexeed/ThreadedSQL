@@ -13,6 +13,7 @@ use Closure;
 use Exception;
 use mysqli;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\TaskHandler;
 use yexeed\thrsql\task\MysqlChecker;
 use yexeed\thrsql\utils\MysqlSettings;
 use yexeed\thrsql\utils\PrepareWrap;
@@ -29,7 +30,8 @@ class ThreadedSQL extends PluginBase
     /** @var array */
     private $callbacks = [], $timeout = [];
 
-    private $checkerTaskId;
+    /** @var TaskHandler */
+    private $checkerTaskHandler = null;
     private $working = true;
 
     public function onEnable(): void
@@ -63,7 +65,12 @@ class ThreadedSQL extends PluginBase
             }
             $this->timeout = [];
 
-            $this->getSched()->cancelTask($this->checkerTaskId);
+            if(self::isPm4()){
+                $this->checkerTaskHandler->cancel();
+            }else{
+                /** @noinspection PhpUndefinedMethodInspection */
+                $this->getSched()->cancelTask($this->checkerTaskHandler->getId());
+            }
             $this->working = false;
             $this->getLogger()->emergency("MysqlWorker CRASH!!!");
             return;
@@ -106,7 +113,7 @@ class ThreadedSQL extends PluginBase
 
     public function startChecker(){
         $handler = $this->getSched()->scheduleRepeatingTask(new MysqlChecker($this), 1);
-        $this->checkerTaskId = $handler->getTaskId();
+        $this->checkerTaskHandler = $handler;
     }
 
     /**
