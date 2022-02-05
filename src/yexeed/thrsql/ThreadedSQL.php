@@ -21,7 +21,7 @@ use yexeed\thrsql\utils\ResultWrap;
 
 class ThreadedSQL extends PluginBase
 {
-    /** @var MysqlOldWorker */
+    /** @var MysqlOldWorker|MysqlNewWorker */
     private $thread;
     /** @var self */
     private static $instance;
@@ -39,14 +39,18 @@ class ThreadedSQL extends PluginBase
         self::$instance = $this;
         $this->loadMysqlSettings();
         $settings = MysqlSettings::get();
-        $this->thread = new MysqlOldWorker(
-            $settings->getHostname(),
+
+        $params = [$settings->getHostname(),
             $settings->getUsername(),
             $settings->getPassword(),
             $settings->getDatabase(),
             $settings->getPort(),
-            $this->getServer()->getLogger()
-        );
+            $this->getServer()->getLogger()];
+        if(self::isPm4()){
+            $this->thread = new MysqlNewWorker(...$params);
+        }else{
+            $this->thread = new MysqlOldWorker(...$params);
+        }
         $this->startChecker();
     }
 
