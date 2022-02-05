@@ -7,7 +7,7 @@ namespace yexeed\thrsql\task;
 use pocketmine\scheduler\Task;
 use yexeed\thrsql\ThreadedSQL;
 
-class MysqlChecker extends Task
+class MysqlOldChecker extends Task
 {
     /** @var ThreadedSQL */
     private $owner;
@@ -17,7 +17,7 @@ class MysqlChecker extends Task
         $this->owner = $owner;
     }
 
-    public function onRun(int $currentTick)
+    public function onRun(int $currentTick): void
     {
         $this->owner->check();
     }

@@ -14,7 +14,7 @@ use Exception;
 use mysqli;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\TaskHandler;
-use yexeed\thrsql\task\MysqlChecker;
+use yexeed\thrsql\task\MysqlOldChecker;
 use yexeed\thrsql\utils\MysqlSettings;
 use yexeed\thrsql\utils\PrepareWrap;
 use yexeed\thrsql\utils\ResultWrap;
@@ -116,7 +116,7 @@ class ThreadedSQL extends PluginBase
     }
 
     public function startChecker(){
-        $handler = $this->getSched()->scheduleRepeatingTask(new MysqlChecker($this), 1);
+        $handler = $this->getSched()->scheduleRepeatingTask(new MysqlOldChecker($this), 1);
         $this->checkerTaskHandler = $handler;
     }
 
