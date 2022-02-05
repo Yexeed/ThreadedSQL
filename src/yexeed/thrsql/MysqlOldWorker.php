@@ -82,7 +82,11 @@ class MysqlOldWorker extends Thread
             $now = time();
             if($nextUpdate < $now) {
                 if(!$my->ping()){
-                    $this->logger->error("Can't ping mysql: " . $my->error);
+                    $this->logger->error("Can't ping mysql: '" . $my->error . "' Reconnect in 10 seconds");
+                    $my->close();
+                    sleep(10);
+                    $this->run();
+                    return;
                 }
                 $nextUpdate = $now + 10;
             }
