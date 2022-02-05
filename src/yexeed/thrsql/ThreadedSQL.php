@@ -155,13 +155,13 @@ class ThreadedSQL extends PluginBase
             $wrap = new PrepareWrap($wrap);
         }
         $settings = MysqlSettings::get();
-        $my = new mysqli($settings->getHostname(), $settings->getUsername(), $settings->getPassword(), $settings->getDatabase(), $settings->getPort());
-        if(!$my){
-            self::$instance->getLogger()->error("Can't connect to forced mysql: " . $my->connect_error);
+        $mysqli = new mysqli($settings->getHostname(), $settings->getUsername(), $settings->getPassword(), $settings->getDatabase(), $settings->getPort());
+        if(!$mysqli){
+            self::$instance->getLogger()->error("Can't connect to forced mysql: " . $mysqli->connect_error);
             return null;
         }
 
-        $mysqlStmt = $my->prepare($wrap->getQuery());
+        $mysqlStmt = $mysqli->prepare($wrap->getQuery());
         foreach ($wrap->getBindParameters() as $bindParameter){
             $mysqlStmt->bind_param($bindParameter[0], $bindParameter[1]);
         }
@@ -188,7 +188,7 @@ class ThreadedSQL extends PluginBase
             }
         }
         $mysqlStmt->close();
-        $my->close();
+        $mysqli->close();
         return $rows;
     }
 
