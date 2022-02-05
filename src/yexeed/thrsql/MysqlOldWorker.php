@@ -66,7 +66,7 @@ class MysqlOldWorker extends Thread
             if($my->connect_errno){
                 throw new Exception($my->connect_error, $my->connect_errno);
             }
-            if(!$my->set_charset("utf8")){
+            if(!$my->set_charset("utf8mb4")){
                 throw new Exception($my->error);
             }
             $my->query(/** @lang MySQL */ "SET NAMES 'utf8'");
