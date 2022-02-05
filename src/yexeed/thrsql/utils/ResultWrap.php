@@ -12,14 +12,14 @@ class ResultWrap
     private $empty;
     /** @var array */
     private $rows;
-    /** @var mixed */
+    /** @var string */
     private $error;
     /** @var bool */
     private $timedOut;
     /** @var int */
     private $insertId;
 
-    public function __construct(array $rows, $error = null, $timedOut = false, int $insertId = -1)
+    public function __construct(array $rows, ?string $error = null, bool $timedOut = false, int $insertId = -1)
     {
         $this->rows = $rows;
         $this->empty = empty($rows);
@@ -28,7 +28,7 @@ class ResultWrap
         $this->insertId = $insertId;
     }
 
-    public static function executeAndWrapStmt(mysqli_stmt $executedStmt){
+    public static function executeAndWrapStmt(mysqli_stmt $executedStmt): ResultWrap{
         //todo: упростить логику этой функции
         if(!$executedStmt->execute()){
             $wrap = new ResultWrap([], $executedStmt->error);
@@ -71,9 +71,9 @@ class ResultWrap
 
     /**
      * @param array $data serialized array using the method above
-     * @return ResultWrap|null
+     * @return ResultWrap
      */
-    public static function unserialize(array $data): ?ResultWrap{
+    public static function unserialize(array $data): ResultWrap{
         return new ResultWrap($data['rows'], $data['error'], $data['timedOut'], $data['insertId']);
     }
 
@@ -94,9 +94,9 @@ class ResultWrap
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getError()
+    public function getError(): ?string
     {
         return $this->error;
     }
