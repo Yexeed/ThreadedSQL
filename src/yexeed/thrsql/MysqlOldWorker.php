@@ -69,7 +69,6 @@ class MysqlOldWorker extends Thread
             if(!$my->set_charset("utf8mb4")){
                 throw new Exception($my->error);
             }
-            $my->query(/** @lang MySQL */ "SET NAMES 'utf8'");
         }catch (Exception $e){
             $this->logger->error("Can't connect to Mysql: " . ($e->getMessage()));
             $this->crashed = true;
