@@ -156,7 +156,7 @@ class ThreadedSQL extends PluginBase
         }
         $settings = MysqlSettings::get();
         $mysqli = new mysqli($settings->getHostname(), $settings->getUsername(), $settings->getPassword(), $settings->getDatabase(), $settings->getPort());
-        if(!$mysqli){
+        if($mysqli->connect_errno){
             self::$instance->getLogger()->error("Can't connect to forced mysql: " . $mysqli->connect_error);
             return null;
         }
