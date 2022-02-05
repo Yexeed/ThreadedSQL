@@ -62,12 +62,12 @@ class MysqlOldWorker extends Thread
     {
         $this->registerClassLoader();
         try {
-            $my = @new mysqli($this->hostname, $this->username, $this->password, $this->database, $this->port);
-            if($my->connect_errno){
-                throw new Exception($my->connect_error, $my->connect_errno);
+            $mysqli = @new mysqli($this->hostname, $this->username, $this->password, $this->database, $this->port);
+            if($mysqli->connect_errno){
+                throw new Exception($mysqli->connect_error, $mysqli->connect_errno);
             }
-            if(!$my->set_charset("utf8mb4")){
-                throw new Exception($my->error);
+            if(!$mysqli->set_charset("utf8mb4")){
+                throw new Exception($mysqli->error);
             }
         }catch (Exception $e){
             $this->logger->error("Can't connect to Mysql: " . ($e->getMessage()));
@@ -81,9 +81,9 @@ class MysqlOldWorker extends Thread
         while(!$this->shutdown){
             $now = time();
             if($nextUpdate < $now) {
-                if(!$my->ping()){
-                    $this->logger->error("Can't ping mysql: '" . $my->error . "' Reconnect in 10 seconds");
-                    $my->close();
+                if(!$mysqli->ping()){
+                    $this->logger->error("Can't ping mysql: '" . $mysqli->error . "' Reconnect in 10 seconds");
+                    $mysqli->close();
                     sleep(10);
                     $this->run();
                     return;
@@ -92,9 +92,9 @@ class MysqlOldWorker extends Thread
             }
             while($line = $this->inputs->shift()){
                 $prepare = PrepareWrap::fromJson($line);
-                $mysqlStmt = $my->prepare($prepare->getQuery());
+                $mysqlStmt = $mysqli->prepare($prepare->getQuery());
                 if($mysqlStmt === false){
-                    $resultWrap = new ResultWrap([], $my->error);
+                    $resultWrap = new ResultWrap([], $mysqli->error);
                     $this->outputs[] = json_encode([
                         'id' => $prepare->getQueryId(),
                         'result' => $resultWrap->arraySerialize()
@@ -120,7 +120,7 @@ class MysqlOldWorker extends Thread
             }
             usleep(10000);
         }
-        $my->close();
+        $mysqli->close();
     }
 
     public function shutdown(){
