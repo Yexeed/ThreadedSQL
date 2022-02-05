@@ -196,4 +196,9 @@ class ThreadedSQL extends PluginBase
         }
     }
 
+    private static function isPm4(): bool
+    {
+        return class_exists("\pocketmine\player\Player");
+    }
+
 }
