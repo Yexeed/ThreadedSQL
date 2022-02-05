@@ -57,7 +57,7 @@ class ResultWrap
     }
 
     /**
-     * @return array, which should be json-encoded
+     * @return array should be json-encoded
      */
     public function arraySerialize(): array
     {
