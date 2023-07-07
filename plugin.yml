@@ -1,7 +1,5 @@
 name: ThreadedSQL
-api:
-  - "4.0.0"
-  - "3.0.0"
+api: 5.0.0
 version: "3.0.5"
 main: yexeed\thrsql\ThreadedSQL
 load: STARTUP

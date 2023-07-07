@@ -27,29 +27,34 @@ class ResultWrap
 
     public static function executeAndWrapStmt(mysqli_stmt $executedStmt): ResultWrap{
         //todo: упростить логику этой функции
-        if(!$executedStmt->execute()){
-            $wrap = new ResultWrap([], $executedStmt->error);
-        }else{
-            $result = $executedStmt->get_result();
-            $rows = [];
-            if($result === false){
-                if($executedStmt->errno !== 0) {
-                    //ERROR!
-                    $wrap = new ResultWrap([], $executedStmt->error);
-                }else{
-                    $wrap = new ResultWrap([]); //no error, just empty result.
+        try {
+            if (!$executedStmt->execute()) {
+                throw new \Exception($executedStmt->error);
+            } else {
+                $result = $executedStmt->get_result();
+                $rows = [];
+                if ($result === false) {
+                    if ($executedStmt->errno !== 0) {
+                        //ERROR!
+                        $wrap = new ResultWrap([], $executedStmt->error);
+                    } else {
+                        $wrap = new ResultWrap([]); //no error, just empty result.
+                        $wrap->insertId = $executedStmt->insert_id;
+                    }
+                } else {
+                    while ($row = $result->fetch_assoc()) {
+                        $rows[] = $row;
+                    }
+                    $result->free();
+                    $wrap = new ResultWrap($rows);
                     $wrap->insertId = $executedStmt->insert_id;
                 }
-            } else {
-                while ($row = $result->fetch_assoc()) {
-                    $rows[] = $row;
-                }
-                $result->free();
-                $wrap = new ResultWrap($rows);
-                $wrap->insertId = $executedStmt->insert_id;
             }
+        }catch (\Exception $e){
+            $wrap = new ResultWrap([], $e->getMessage());
+        } finally {
+            $executedStmt->close();
         }
-        $executedStmt->close();
         return $wrap;
     }
 

@@ -4,15 +4,16 @@ namespace yexeed\thrsql;
 
 use Exception;
 use mysqli;
-use pocketmine\thread\Thread as PM4Thread;
-use Threaded;
-use ThreadedLogger;
+use pmmp\thread\Thread as ThreadAlias;
+use pmmp\thread\ThreadSafeArray;
+use pocketmine\thread\log\ThreadSafeLogger;
+use pocketmine\thread\Thread;
 use yexeed\thrsql\utils\PrepareWrap;
 use yexeed\thrsql\utils\ResultWrap;
 
-class MysqlNewWorker extends PM4Thread
+class MysqlNewWorker extends Thread
 {
-    /** @var Threaded */
+    /** @var ThreadSafeArray */
     public $inputs, $outputs;
     /** @var string */
     private $hostname;
@@ -26,13 +27,13 @@ class MysqlNewWorker extends PM4Thread
     private $database;
     /** @var bool */
     private $shutdown;
-    /** @var ThreadedLogger */
+    /** @var ThreadSafeLogger */
     private $logger;
 
     /** @var bool */
     private $crashed = false;
 
-    public function __construct(string $host, string $user, string $password, string $database, int $port, ThreadedLogger $logger)
+    public function __construct(string $host, string $user, string $password, string $database, int $port, ThreadSafeLogger $logger)
     {
         $this->hostname = $host;
         $this->username = $user;
@@ -40,9 +41,9 @@ class MysqlNewWorker extends PM4Thread
         $this->logger = $logger;
         $this->port = $port;
         $this->database = $database;
-        $this->inputs = new Threaded();
-        $this->outputs = new Threaded();
-        $this->start();
+        $this->inputs = new ThreadSafeArray();
+        $this->outputs = new ThreadSafeArray();
+        $this->start(ThreadAlias::INHERIT_INI);
     }
 
     /**
@@ -50,7 +51,6 @@ class MysqlNewWorker extends PM4Thread
      */
     public function onRun(): void
     {
-        $this->registerClassLoaders();
         try {
             $mysqli = @new mysqli($this->hostname, $this->username, $this->password, $this->database, $this->port);
             if($mysqli->connect_errno){
@@ -71,14 +71,18 @@ class MysqlNewWorker extends PM4Thread
         while(!$this->shutdown){
             $now = time();
             if($nextUpdate < $now) {
-                if(!$mysqli->ping()){
-                    $this->logger->error("Can't ping mysql: '" . $mysqli->error . "' Reconnect in 10 seconds");
+                try {
+                    if (!$mysqli->ping()) {
+                        throw new Exception($mysqli->error);
+                    }
+                    $nextUpdate = $now + 10;
+                }catch (Exception $e){
+                    $this->logger->error("Can't ping mysql: '" . $e->getMessage() . "' Reconnect in 10 seconds");
                     $mysqli->close();
                     sleep(10);
                     $this->run();
                     return;
                 }
-                $nextUpdate = $now + 10;
             }
             while($line = $this->inputs->shift()){
                 $prepare = PrepareWrap::fromJson($line);
@@ -113,7 +117,7 @@ class MysqlNewWorker extends PM4Thread
         $mysqli->close();
     }
 
-    public function shutdown(){
+    public function shutdown(): void {
         $this->shutdown = true;
     }
 

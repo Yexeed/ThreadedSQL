@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: yexee
- * Date: 08.02.2019
- * Time: 17:44
- */
 
 namespace yexeed\thrsql;
 
@@ -13,28 +7,22 @@ use Closure;
 use Exception;
 use mysqli;
 use pocketmine\plugin\PluginBase;
-use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
+use pocketmine\scheduler\TaskScheduler;
 use yexeed\thrsql\task\MysqlNewChecker;
-use yexeed\thrsql\task\MysqlOldChecker;
 use yexeed\thrsql\utils\MysqlSettings;
 use yexeed\thrsql\utils\PrepareWrap;
 use yexeed\thrsql\utils\ResultWrap;
 
 class ThreadedSQL extends PluginBase
 {
-    /** @var MysqlOldWorker|MysqlNewWorker */
-    private $thread;
-    /** @var self */
-    private static $instance;
-    /** @var int */
-    private $id = 0;
-    /** @var array */
-    private $callbacks = [], $timeout = [];
-
-    /** @var TaskHandler */
-    private $checkerTaskHandler = null;
-    private $working = true;
+    private MysqlNewWorker $thread;
+    private static ?self $instance = null;
+    private int $id = 0;
+    private array $callbacks = [];
+    private array $timeout = [];
+    private ?TaskHandler $checkerTaskHandler = null;
+    private bool $working = true;
 
     public function onEnable(): void
     {
@@ -48,22 +36,17 @@ class ThreadedSQL extends PluginBase
             $settings->getDatabase(),
             $settings->getPort(),
             $this->getServer()->getLogger()];
-        if(self::isPm4()){
-            $this->thread = new MysqlNewWorker(...$params);
-        }else{
-            $this->thread = new MysqlOldWorker(...$params);
-        }
+        $this->thread = new MysqlNewWorker(...$params);
         $this->startChecker();
     }
 
-    private function loadMysqlSettings()
-    {
+    private function loadMysqlSettings(): void {
         $this->saveDefaultConfig();
         $array = $this->getConfig()->get("mysql");
         MysqlSettings::init($array);
     }
 
-    public function check(){
+    public function check(): void {
         if($this->thread->isCrashed()){
             //wow?
             foreach ($this->callbacks as $callback){
@@ -71,12 +54,7 @@ class ThreadedSQL extends PluginBase
             }
             $this->timeout = [];
 
-            if(self::isPm4()){
-                $this->checkerTaskHandler->cancel();
-            }else{
-                /** @noinspection PhpUndefinedMethodInspection */
-                $this->getSched()->cancelTask($this->checkerTaskHandler->getId());
-            }
+            $this->checkerTaskHandler->cancel();
             $this->working = false;
             $this->getLogger()->emergency("MysqlWorker CRASH!!!");
             return;
@@ -111,30 +89,19 @@ class ThreadedSQL extends PluginBase
         }
     }
 
-    private function getSched()
-    {
-        if(method_exists($this, "getScheduler")){
-            return $this->getScheduler();
-        }else{
-            /** @noinspection PhpUndefinedMethodInspection */
-            return $this->getServer()->getScheduler();
-        }
-    }
-
-    public function startChecker(){
-        /** @var Task $task */
-        $task = self::isPm4() ? new MysqlNewChecker($this) : new MysqlOldChecker($this);
-        $handler = $this->getSched()->scheduleRepeatingTask($task, 1);
+    public function startChecker(): void {
+        $task = new MysqlNewChecker($this);
+        $handler = $this->getScheduler()->scheduleRepeatingTask($task, 1);
         $this->checkerTaskHandler = $handler;
     }
 
     /**
-     * @param PrepareWrap|string $wrap
+     * @param string|PrepareWrap $wrap
      * @param Closure|null $func
      * @param int|null $timeout
      * @throws Exception
      */
-    public static function query($wrap, ?Closure $func = null, ?int $timeout = null){
+    public static function query(PrepareWrap|string $wrap, ?Closure $func = null, ?int $timeout = null): void {
         if(!$wrap instanceof PrepareWrap){
             $wrap = new PrepareWrap($wrap); //deprecated API support :O
         }
@@ -158,7 +125,7 @@ class ThreadedSQL extends PluginBase
      * @return array|null
      * @throws Exception
      */
-    public static function forceQuery($wrap): ?array{
+    public static function forceQuery(PrepareWrap|string $wrap): ?array{
         if(!$wrap instanceof PrepareWrap){
             $wrap = new PrepareWrap($wrap);
         }
@@ -214,10 +181,4 @@ class ThreadedSQL extends PluginBase
             $this->thread->quit();
         }
     }
-
-    private static function isPm4(): bool
-    {
-        return class_exists("\pocketmine\player\Player");
-    }
-
 }
